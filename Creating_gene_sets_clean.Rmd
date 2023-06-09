@@ -1,0 +1,61 @@
+---
+title: "Creating_gene_sets"
+output: html_notebook
+---
+
+```{r}
+library(GSEABase)
+```
+
+```{r}
+library(readxl)
+Gene_Sets <- read_excel("Gene_Sets_Human.xlsx")
+head(Gene_Sets, 10)
+Gene_Sets["Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)"]
+```
+
+```{r}
+Gene_Sets_unique = lapply(Gene_Sets, unique)
+Gene_Sets_unique["Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)"]
+Gene_Sets <- Gene_Sets_unique
+Gene_Sets["Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)"]
+```
+
+
+#Gene Set Signatures: Functions and TFs
+```{r}
+#Creating list of genes from each process
+#Metabolism
+Glycolisis <- na.omit(Gene_Sets$`Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)`)
+Oxidative_phosphorylation<- na.omit(Gene_Sets$`Oxidative phosphorylation (GO:000619)`)
+Electron_transport_chain<- na.omit(Gene_Sets$`Electron transport chain (GO:0022900)`)
+TCA_cycle<- na.omit(Gene_Sets$`Tricarboxylic acid cycle (GO:0006099)`)
+PPP<- na.omit(Gene_Sets$`pentose-phosphate shunt (GO:0006098)`)
+Fatty_acid_oxidation<- na.omit(Gene_Sets$`fatty acid oxidation (GO:0019395)`)
+Glutamine_metabolism<- na.omit(Gene_Sets$`glutamine metabolic process (GO:0006541)`)
+Gluconeogenesis<- na.omit(Gene_Sets$`gluconeogenesis (GO:0006094)`)
+Fatty_acid_biosynthesis<- na.omit(Gene_Sets$`Fatty acid biosynthesis`)
+Glucagon_signaling<- na.omit(Gene_Sets$`Glucagon signaling pathway (GO_0071377)`)
+
+
+#Creating geneset from each list
+Glycolisis_GS <- GeneSet(Glycolisis, setName="Glycolisis")
+PPP_GS<-GeneSet(PPP, setName="PPP")
+TCA_cycle_GS <- GeneSet(TCA_cycle, setName="TCA_cycle")
+Oxidative_phosphorylation_GS <- GeneSet(Oxidative_phosphorylation, setName="Oxidative_phosphorylation")
+Electron_transport_chain_GS <- GeneSet(Electron_transport_chain, setName="Electron_transport_chain")
+Gluconeogenesis_GS<-GeneSet(Gluconeogenesis, setName="Gluconeogenesis")
+Glutamine_metabolism_GS<-GeneSet(Glutamine_metabolism, setName="Glutamine_metabolism")
+Glucagon_signaling_GS<-GeneSet(Glucagon_signaling, setName="Glucagon_signaling")
+Fatty_acid_biosynthesis_GS<-GeneSet(Fatty_acid_biosynthesis, setName="Fatty_acid_biosynthesis")
+Fatty_acid_oxidation_GS<-GeneSet(Fatty_acid_oxidation, setName="Fatty_acid_oxidation")
+
+# Ceating gene collection
+Gene_Set_Collections<- GeneSetCollection(c(Glycolisis_GS, Oxidative_phosphorylation_GS, Electron_transport_chain_GS, TCA_cycle_GS,PPP_GS, Fatty_acid_oxidation_GS, Glutamine_metabolism_GS, Gluconeogenesis_GS, Fatty_acid_biosynthesis_GS, Glucagon_signaling_GS))
+```
+
+#Saving gene_set_collections
+```{r}
+saveRDS(Gene_Set_Collections, file = "Gene_Set_Collections.rds.gz")
+```
+

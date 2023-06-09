@@ -1,0 +1,411 @@
+---
+title: "Signatures"
+output: html_notebook
+---
+
+```{r}
+library(AUCell)
+library(plotly)
+library(NMF)
+library(DT)
+```
+
+```{r}
+# To support paralell execution:
+BiocManager::install(c("doMC", "doRNG"))
+# For the main example:
+BiocManager::install(c("mixtools", "GEOquery", "SummarizedExperiment"))
+# For the examples in the follow-up section of the tutorial:
+BiocManager::install(c("DT", "plotly", "NMF", "d3heatmap"))
+
+library(plotly)
+library(NMF)
+library(d3heatmap)
+library(DT)
+```
+
+```{r}
+# get count matrix from snRNA seurat object
+library(Seurat)
+brain_filtered_2 <- readRDS("/.../brain_filtered_2.rds")
+head(brain_filtered_2)
+allcells_matrix <- GetAssayData(object = brain_filtered_2, slot = "scale.data")
+exprMatrixALL <- as(allcells_matrix, "dgCMatrix")
+dim(exprMatrixALL)
+```
+
+
+```{r}
+#Open Gene_Set_Collections in GeneSet folder for loading signatures. See Creating_gene_sets file to check 
+filename <- file.cxhoose("Gene_Set_Collections.rds.gz")
+Gene_Set_Collections <- readRDS(filename) 
+names(Gene_Set_Collections)
+
+#1. calculate cell rankings from sce of PMNs all genes (choose here the object (population) of interest)
+cells_rankings <- AUCell_buildRankings(exprMatrixALL, plotStats=TRUE, verbose=FALSE)
+cells_rankings
+saveRDS(cells_rankings, file = "cells_rankings.rds.gz")
+
+#2. Calculate enrichment for the gene signatures (AUC)
+cells_AUC <- AUCell_calcAUC(Gene_Set_Collections, cells_rankings)
+cells_AUC 
+saveRDS(cells_AUC, file = "cells_AUC.rds.gz")
+```
+
+```{r}
+AUCell_plotHist(cells_AUC, nBreaks = 100)
+```
+
+
+# AUC representations
+```{r}
+set.seed(123)
+par(mfrow=c(3,3)) 
+cells_assignment <- AUCell_exploreThresholds(cells_AUC, plotHist=TRUE, assignCells=TRUE)
+
+## minimumDens (plot in Blue): Inflection point of the density curve. This is usually a good option for the ideal situation with bimodal distributions.
+## L_k2 (plot in Red): Left distribution, after adjusting the AUC to a mixture of two distributions. The threshold is set to the right (prob: 1-(thrP/nCells)). Only available if 'mixtools' package is installed.
+## R_k3 (plot in Pink): Right distribution, after adjusting the AUC to a mixture of three distributions. The threshold is set to the left (prob: thrP). Only available if 'mixtools' package is installed
+## Global_k1 (plot in Grey): "global" distribution (i.e. mean and standard deviations of all cells). The threshold is set to the right (prob: 1-(thrP/nCells)).
+```
+
+
+#Extracting metadata
+```{r}
+# obtain UMAP coordinates
+UMAP_1 <- Embeddings(object = brain_filtered_2, reduction = "umap")[, 1]
+head(UMAP_1)
+UMAP_2 <- Embeddings(object = brain_filtered_2, reduction = "umap")[, 2]
+head(UMAP_2)
+brain_filtered_2 <- AddMetaData(brain_filtered_2, UMAP_1, "UMAP_1")
+brain_filtered_2 <- AddMetaData(brain_filtered_2, UMAP_2, "UMAP_2")
+head(brain_filtered_2)
+
+# Extract metadata
+Label<- brain_filtered_2$label
+Group <- brain_filtered_2$group
+Label2 <- brain_filtered_2$label_2
+UMAP_1 <- brain_filtered_2$UMAP_1
+UMAP_2 <- brain_filtered_2$UMAP_2
+```
+
+###Creating signatures
+```{r}
+
+#####Metabolism####
+Signature_Glycolisis<- cells_AUC["Glycolisis",]
+Signature_Glycolisis <- as.data.frame(Signature_Glycolisis@assays@data@listData[["AUC"]], "Glycolisis")
+Signature_Glycolisis<- t(Signature_Glycolisis)#change order columns and rows
+Signature_Glycolisis <- as.data.frame(Signature_Glycolisis)
+
+Signature_Oxidative_phosphorylation<- cells_AUC["Oxidative_phosphorylation",]
+Signature_Oxidative_phosphorylation<- as.data.frame(Signature_Oxidative_phosphorylation@assays@data@listData[["AUC"]], "Oxidative_phosphorylation")
+Signature_Oxidative_phosphorylation<- t(Signature_Oxidative_phosphorylation)#change order columns and rows
+Signature_Oxidative_phosphorylation <- as.data.frame(Signature_Oxidative_phosphorylation)
+
+Signature_Electron_transport_chain<- cells_AUC["Electron_transport_chain",]
+Signature_Electron_transport_chain<- as.data.frame(Signature_Electron_transport_chain@assays@data@listData[["AUC"]], "Electron_transport_chain")
+Signature_Electron_transport_chain<- t(Signature_Electron_transport_chain)#change order columns and rows
+Signature_Electron_transport_chain <- as.data.frame(Signature_Electron_transport_chain)
+
+Signature_TCA_cycle<- cells_AUC["TCA_cycle",]
+Signature_TCA_cycle<- as.data.frame(Signature_TCA_cycle@assays@data@listData[["AUC"]], "TCA_cycle")
+Signature_TCA_cycle<- t(Signature_TCA_cycle)#change order columns and rows
+Signature_TCA_cycle <- as.data.frame(Signature_TCA_cycle)
+
+Signature_PPP<- cells_AUC["PPP",]
+Signature_PPP<- as.data.frame(Signature_PPP@assays@data@listData[["AUC"]], "PPP")
+Signature_PPP<- t(Signature_PPP)#change order columns and rows
+Signature_PPP <- as.data.frame(Signature_PPP)
+
+Signature_Fatty_acid_oxidation<- cells_AUC["Fatty_acid_oxidation",]
+Signature_Fatty_acid_oxidation<- as.data.frame(Signature_Fatty_acid_oxidation@assays@data@listData[["AUC"]], "Fatty_acid_oxidation")
+Signature_Fatty_acid_oxidation<- t(Signature_Fatty_acid_oxidation)#change order columns and rows
+Signature_Fatty_acid_oxidation <- as.data.frame(Signature_Fatty_acid_oxidation)
+
+Signature_Glutamine_metabolism<- cells_AUC["Glutamine_metabolism",]
+Signature_Glutamine_metabolism<- as.data.frame(Signature_Glutamine_metabolism@assays@data@listData[["AUC"]], "Glutamine_metabolism")
+Signature_Glutamine_metabolism<- t(Signature_Glutamine_metabolism)#change order columns and rows
+Signature_Glutamine_metabolism <- as.data.frame(Signature_Glutamine_metabolism)
+
+Signature_Gluconeogenesis<- cells_AUC["Gluconeogenesis",]
+Signature_Gluconeogenesis<- as.data.frame(Signature_Gluconeogenesis@assays@data@listData[["AUC"]], "Gluconeogenesis")
+Signature_Gluconeogenesis<- t(Signature_Gluconeogenesis)#change order columns and rows
+Signature_Gluconeogenesis <- as.data.frame(Signature_Gluconeogenesis)
+
+Signature_Fatty_acid_biosynthesis<- cells_AUC["Fatty_acid_biosynthesis",]
+Signature_Fatty_acid_biosynthesis<- as.data.frame(Signature_Fatty_acid_biosynthesis@assays@data@listData[["AUC"]], "Fatty_acid_biosynthesis")
+Signature_Fatty_acid_biosynthesis<- t(Signature_Fatty_acid_biosynthesis)#change order columns and rows
+Signature_Fatty_acid_biosynthesis <- as.data.frame(Signature_Fatty_acid_biosynthesis)
+
+Signature_Glucagon_signaling<- cells_AUC["Glucagon_signaling",]
+Signature_Glucagon_signaling<- as.data.frame(Signature_Glucagon_signaling@assays@data@listData[["AUC"]], "Glucagon_signaling")
+Signature_Glucagon_signaling<- t(Signature_Glucagon_signaling)#change order columns and rows
+Signature_Glucagon_signaling <- as.data.frame(Signature_Glucagon_signaling)
+
+####Creating Signature dataframe ####
+Signatures<- cbind(Signature_Glycolisis, Cluster = Label)
+Signatures<- cbind(Signatures, Cluster2 = Label2)
+Signatures<- cbind(Signatures, Group = Group)
+Signatures<- cbind(Signatures, UMAP_1 = UMAP_1)
+Signatures<- cbind(Signatures, UMAP_2 = UMAP_2)
+
+Signatures<- cbind(Signatures, Glycolisis = Signature_Glycolisis)
+Signatures<- cbind(Signatures, Oxidative_phosphorylation = Signature_Oxidative_phosphorylation)
+Signatures<- cbind(Signatures, Electron_transport_chain = Signature_Electron_transport_chain)
+Signatures<- cbind(Signatures, Gluconeogenesis = Signature_Gluconeogenesis)
+Signatures<- cbind(Signatures, Glutamine_metabolism = Signature_Glutamine_metabolism)
+Signatures<- cbind(Signatures, Fatty_acid_biosynthesis = Signature_Fatty_acid_biosynthesis)
+Signatures<- cbind(Signatures, Fatty_acid_oxidation = Signature_Fatty_acid_oxidation)
+Signatures<- cbind(Signatures, PPP = Signature_PPP)
+Signatures<- cbind(Signatures, TCA_cycle = Signature_TCA_cycle)
+Signatures<- cbind(Signatures, Glucagon_signaling = Signature_Glucagon_signaling)
+
+write.csv(Signatures, "Signatures.csv")
+colnames(Signatures)
+```
+
+
+```{r}
+# Add these Signatures to Seurat object
+brain_filtered_2
+head(brain_filtered_2)
+
+gbm <- AddMetaData(brain_filtered_2, Signatures)
+head(gbm@meta.data, 20)
+tail(gbm@meta.data, 30)
+
+colnames(gbm@meta.data)
+metabolic.signatures <- colnames(gbm@meta.data)[28:37] 
+metabolic.signatures
+```
+
+```{r}
+#Confirmation 
+table(gbm$label_2, gbm$Cluster2)
+table(gbm$group, gbm$Group)
+```
+
+```{r}
+library(RColorBrewer)
+mycolors = c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="Set1", n = 8))
+DimPlot(object = gbm, group.by = "label_2", cols= mycolors, label = FALSE)
+```
+
+
+# Plot signatures in ViolinPLots
+```{r}
+metabolic.features = c("TCA_cycle", "Glycolisis", "Electron_transport_chain", "Oxidative_phosphorylation", "Gluconeogenesis", "Glutamine_metabolism", "Fatty_acid_biosynthesis", "Fatty_acid_oxidation", "PPP", "Glucagon_signaling")
+
+VlnPlot(microglia.signature, features = metabolic.features, pt.size = 0, split.by = "group")
+```
+
+
+# Statistical significance signatures?
+```{r}
+table <- as.data.frame(microglia.signature@meta.data)
+head(table,10)
+```
+
+```{r}
+y <- table[,20:37]
+y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y)
+y
+```
+
+```{r}
+library(tidyverse)
+library(rstatix)
+library(ggpubr)
+```
+
+```{r}
+head(y, 30)
+table(y$Group)
+
+# Put all variables in the same column except `Species`, the grouping variable
+y1 <- y %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y1 %>% sample_n(6)
+
+stat.test.act.metab <- y1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.act.metab
+
+write.csv(stat.test.act.metab, "stat.test.signatures.activity.metabolism.csv")
+```
+
+
+# signatures for other cell types #
+```{r}
+Idents(gbm) <- "seurat_clusters"
+DimPlot(object = gbm, group.by ="seurat_clusters", label = TRUE)
+astrocytes.signature <- subset(x = gbm, idents = c("3"))
+DimPlot(object = astrocytes.signature, split.by = "group", cols= mycolors)
+
+Idents(gbm) <- "seurat_clusters"
+DimPlot(object = gbm, group.by ="seurat_clusters", label = TRUE)
+neurons.signature <- subset(x = gbm, idents = c("14", "9", "6", "12"))
+DimPlot(object = neurons.signature, split.by = "group", cols= mycolors)
+
+Idents(gbm) <- "seurat_clusters"
+DimPlot(object = gbm, group.by ="seurat_clusters", label = TRUE)
+oligo.signature <- subset(x = gbm, idents = c("0", "1", "4", "7"))
+DimPlot(object = oligo.signature, split.by = "group", cols= mycolors)
+
+Idents(gbm) <- "seurat_clusters"
+DimPlot(object = gbm, group.by ="seurat_clusters", label = TRUE)
+endo.signature <- subset(x = gbm, idents = c("11"))
+DimPlot(object = endo.signature, split.by = "group", cols= mycolors)
+
+Idents(gbm) <- "seurat_clusters"
+DimPlot(object = gbm, group.by ="seurat_clusters", label = TRUE)
+tcell.signature <- subset(x = gbm, idents = c("13"))
+DimPlot(object = tcell.signature, split.by = "group", cols= mycolors)
+
+Idents(gbm) <- "seurat_clusters"
+DimPlot(object = gbm, group.by ="seurat_clusters", label = TRUE)
+opc.signature <- subset(x = gbm, idents = c("5"))
+DimPlot(object = opc.signature, split.by = "group", cols= mycolors)
+
+```
+
+```{r}
+table.astrocytes <- as.data.frame(astrocytes.signature@meta.data)
+head(table.astrocytes,10)
+colnames(table.astrocytes)
+y.astrocytes <- table.astrocytes[,16:37]
+#y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y.astrocytes)
+y.astrocytes
+
+table.neurons <- as.data.frame(neurons.signature@meta.data)
+head(table.neurons,10)
+colnames(table.neurons)
+y.neurons <- table.neurons[,16:37]
+#y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y.neurons)
+y.neurons
+
+table.oligo <- as.data.frame(oligo.signature@meta.data)
+head(table.oligo,10)
+colnames(table.oligo)
+y.oligo <- table.oligo[,16:37]
+#y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y.oligo)
+y.oligo
+
+table.endo <- as.data.frame(endo.signature@meta.data)
+head(table.endo,10)
+colnames(table.endo)
+y.endo <- table.endo[,16:37]
+#y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y.endo)
+y.endo
+
+table.tcell <- as.data.frame(tcell.signature@meta.data)
+head(table.tcell,10)
+colnames(table.tcell)
+y.tcell <- table.tcell[,16:37]
+#y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y.tcell)
+y.tcell
+
+table.opc <- as.data.frame(opc.signature@meta.data)
+head(table.opc,10)
+colnames(table.opc)
+y.opc <- table.opc[,16:37]
+#y <- table[c(16, 20:37)] # remove columns no needed or only desired pathways: cell activity and cell metabolism
+head(y.opc)
+y.opc
+```
+
+```{r}
+head(y.astrocytes, 30)
+table(y.astrocytes$Group)
+
+# Put all variables in the same column except `Species`, the grouping variable
+y.astrocytes1 <- y.astrocytes %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y.astrocytes1 %>% sample_n(6)
+stat.test.astrocytes <- y.astrocytes1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.astrocytes
+write.csv(stat.test.astrocytes, "stat.test.signatures.astrocytes.csv")
+
+
+y.neurons1 <- y.neurons %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y.neurons1 %>% sample_n(6)
+stat.test.neurons <- y.neurons1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.neurons
+write.csv(stat.test.neurons, "stat.test.signatures.neurons.csv")
+
+y.oligo1 <- y.oligo %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y.oligo1 %>% sample_n(6)
+stat.test.oligo <- y.oligo1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.oligo
+write.csv(stat.test.oligo, "stat.test.signatures.oligo.csv")
+
+y.endo1 <- y.endo %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y.endo1 %>% sample_n(6)
+stat.test.endo <- y.endo1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.endo
+write.csv(stat.test.endo, "stat.test.signatures.endo.csv")
+
+y.tcell1 <- y.tcell %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y.tcell1 %>% sample_n(6)
+stat.test.tcell <- y.tcell1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.tcell
+write.csv(stat.test.tcell, "stat.test.signatures.tcell.csv")
+
+y.opc1 <- y.opc %>%
+  pivot_longer(-Group, names_to = "signatures", values_to = "value")
+y.opc1 %>% sample_n(6)
+stat.test.opc <- y.opc1 %>%
+  group_by(signatures) %>%
+  t_test(value ~ Group) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance()
+stat.test.opc
+write.csv(stat.test.opc, "stat.test.signatures.opc.csv")
+
+library(dplyr)
+library(tidyr)
+library(rstatix)
+```
+
+
+
+
+
+
+
+
+
