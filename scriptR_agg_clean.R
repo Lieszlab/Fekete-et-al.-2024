@@ -8,7 +8,7 @@ library(tidyr)
 library(patchwork)
 
 getwd()
-setwd("/Volumes/AS/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated")
+setwd("/.../Analysis_4samplesAggregated")
 
 ### read aggregate file ###
 agg <- Read10X(data.dir = "/Volumes/bf-cluster2/asimatso/HumanBrain/AGG/outs/count/filtered_feature_bc_matrix")
