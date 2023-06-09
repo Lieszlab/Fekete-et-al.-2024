@@ -11,7 +11,7 @@ getwd()
 setwd("/.../Analysis_4samplesAggregated")
 
 ### read aggregate file ###
-agg <- Read10X(data.dir = "/Volumes/bf-cluster2/asimatso/HumanBrain/AGG/outs/count/filtered_feature_bc_matrix")
+agg <- Read10X(data.dir = "/.../filtered_feature_bc_matrix")
 agg <- CreateSeuratObject(counts = agg, project = "HumanBrain", min.cells = 3, min.features = 200)
 table(agg$orig.ident)  #19763 nuclei
 agg -> brain
@@ -80,7 +80,7 @@ mycolors = c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="Set1", n = 8))
 DimPlot(brain_filtered_2, reduction = "umap", label = TRUE, pt.size = 1, label.size = 8, cols = mycolors)
 DimPlot(brain_filtered_2, reduction = "umap", split.by =  "sample", group.by = "sample")
 
-saveRDS(brain_filtered_2, file = "/Volumes/Alba Simats/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated/brain_filtered_2.rds")
+saveRDS(brain_filtered_2, file = "/.../brain_filtered_2.rds")
 
 # add grouping
 new.grouping <- c("group")
@@ -445,7 +445,7 @@ saveRDS(cellchat, file = "cellchat_ALL_reduced.rds")
 # load cellchat files
 cellchat.CONTROL_reduced <- readRDS("cellchat_CONTROL_reduced.rds")
 cellchat.ALL_reduced <- readRDS("cellchat_ALL_reduced.rds")
-cellchat.COVID <- readRDS("/Volumes/Alba Simats/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated/cellchat_COVID.rds")
+cellchat.COVID <- readRDS("/.../cellchat_COVID.rds")
 
 cellchat <- cellchat.CONTROL
 cellchat <- cellchat.ALL
@@ -575,7 +575,7 @@ saveRDS(cellchat, file = "cellchat_MERGED.noEpCVSM.rds")
 # load cellchat files
 cellchat.MERGED <- readRDS("cellchat_MERGED.rds")
 cellchat.MERGED.reduced <- readRDS("cellchat_MERGED.reduced.rds")
-cellchat.MERGED.reduced <- readRDS("/Volumes/AS/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated/cellchat_MERGED.noEpCVSM.rds")
+cellchat.MERGED.reduced <- readRDS("/.../cellchat_MERGED.noEpCVSM.rds")
 
 
 
