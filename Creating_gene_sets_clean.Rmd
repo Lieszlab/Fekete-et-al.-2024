@@ -7,21 +7,6 @@ output: html_notebook
 library(GSEABase)
 ```
 
-```{r}
-library(readxl)
-Gene_Sets <- read_excel("Gene_Sets_Human.xlsx")
-head(Gene_Sets, 10)
-Gene_Sets["Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)"]
-```
-
-```{r}
-Gene_Sets_unique = lapply(Gene_Sets, unique)
-Gene_Sets_unique["Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)"]
-Gene_Sets <- Gene_Sets_unique
-Gene_Sets["Glycolysis ( Reactome Pathway Database #R-MMU-70171 + GO_0006096)"]
-```
-
-
 #Gene Set Signatures: Functions and TFs
 ```{r}
 #Creating list of genes from each process
