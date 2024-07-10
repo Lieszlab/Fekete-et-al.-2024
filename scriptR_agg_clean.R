@@ -8,10 +8,10 @@ library(tidyr)
 library(patchwork)
 
 getwd()
-setwd("/.../Analysis_4samplesAggregated")
+setwd("/Volumes/AS/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated")
 
 ### read aggregate file ###
-agg <- Read10X(data.dir = "/.../filtered_feature_bc_matrix")
+agg <- Read10X(data.dir = "/Volumes/bf-cluster2/asimatso/HumanBrain/AGG/outs/count/filtered_feature_bc_matrix")
 agg <- CreateSeuratObject(counts = agg, project = "HumanBrain", min.cells = 3, min.features = 200)
 table(agg$orig.ident)  #19763 nuclei
 agg -> brain
@@ -80,7 +80,7 @@ mycolors = c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="Set1", n = 8))
 DimPlot(brain_filtered_2, reduction = "umap", label = TRUE, pt.size = 1, label.size = 8, cols = mycolors)
 DimPlot(brain_filtered_2, reduction = "umap", split.by =  "sample", group.by = "sample")
 
-saveRDS(brain_filtered_2, file = "/.../brain_filtered_2.rds")
+saveRDS(brain_filtered_2, file = "/Volumes/Alba Simats/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated/brain_filtered_2.rds")
 
 # add grouping
 new.grouping <- c("group")
@@ -114,7 +114,7 @@ colnames(brain_filtered_2@meta.data)
 
 brain_filtered_2$label[brain_filtered_2$seurat_clusters == "0"] <- "Oligodendrocytes-1"
 brain_filtered_2$label[brain_filtered_2$seurat_clusters == "1"] <- "Oligodendrocytes-2"
-brain_filtered_2$label[brain_filtered_2$seurat_clusters == "2"] <- "Microglia"
+brain_filtered_2$label[brain_filtered_2$seurat_clusters == "2"] <- "MicrogliaMacrophages"
 brain_filtered_2$label[brain_filtered_2$seurat_clusters == "3"] <- "Astrocytes"
 brain_filtered_2$label[brain_filtered_2$seurat_clusters == "4"] <- "Oligodendrocytes-3"
 brain_filtered_2$label[brain_filtered_2$seurat_clusters == "5"] <- "OPC"
@@ -137,7 +137,7 @@ brain_filtered_2[[new.label]] <- new.label
 colnames(brain_filtered_2@meta.data)
 brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "0"] <- "Oligodendrocytes"
 brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "1"] <- "Oligodendrocytes"
-brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "2"] <- "Microglia"
+brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "2"] <- "MicrogliaMacrophages"
 brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "3"] <- "Astrocytes"
 brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "4"] <- "Oligodendrocytes"
 brain_filtered_2$label_2[brain_filtered_2$seurat_clusters == "5"] <- "OPC"
@@ -175,19 +175,19 @@ DEGopc <- FindMarkers(object = brain_filtered_2, ident.1 = "COVID", group.by = "
 write.table(DEGopc, 'DEGopc.tsv', sep='\t')
 
 
-###### Filter microglia only ########
+###### Filter MicrogliaMacrophages only ########
 Idents(brain_filtered_2) <- "seurat_clusters"
-microglia <- subset(x = brain_filtered_2, idents = c("2"))
-DimPlot(object = microglia, split.by = "group", cols= mycolors)
+MicrogliaMacrophages <- subset(x = brain_filtered_2, idents = c("2"))
+DimPlot(object = MicrogliaMacrophages, split.by = "group", cols= mycolors)
 
-Idents(microglia_2) = "group"
-microglia_2.markers.COV <- FindMarkers(microglia_2, ident.1 = "COVID", min.pct = 0.25)
-head(microglia_2.markers.COV, n = 5)
-write.table(microglia_2.markers.COV, 'markers_microglia_2.tsv', sep='\t')
+Idents(MicrogliaMacrophages) = "group"
+MicrogliaMacrophages.markers.COV <- FindMarkers(MicrogliaMacrophages, ident.1 = "COVID", min.pct = 0.25)
+head(MicrogliaMacrophages.markers.COV, n = 5)
+write.table(MicrogliaMacrophages.markers.COV, 'markers_MicrogliaMacrophages.tsv', sep='\t')
 
 library(EnhancedVolcano)
-EnhancedVolcano(microglia_2.markers.COV,
-                lab = rownames(microglia_2.markers.COV),
+EnhancedVolcano(MicrogliaMacrophages.markers.COV,
+                lab = rownames(MicrogliaMacrophages.markers.COV),
                 x = 'avg_log2FC',
                 y = 'p_val_adj',
                 xlab = bquote(~Log[2]~ 'fold change'),
@@ -212,51 +212,33 @@ EnhancedVolcano(microglia_2.markers.COV,
                 )
 
 
-# recluster microglia #
-microglia_2 <- NormalizeData(microglia_2, normalization.method = "LogNormalize", scale.factor = 10000)
-microglia_2 <- FindVariableFeatures(microglia_2, selection.method = "vst", nfeatures = 2000)
-top10 <- head(VariableFeatures(microglia_2), 10)
-all.genes <- rownames(microglia_2)
-microglia_2 <- ScaleData(microglia_2, features = all.genes)
-microglia_2 <- RunPCA(microglia_2, features = VariableFeatures(object = brain_filtered_2))
-DimHeatmap(microglia_2, dims = 1:10, cells = 500, balanced = TRUE)
+# recluster MicrogliaMacrophages #
+MicrogliaMacrophages <- NormalizeData(MicrogliaMacrophages, normalization.method = "LogNormalize", scale.factor = 10000)
+MicrogliaMacrophages <- FindVariableFeatures(MicrogliaMacrophages, selection.method = "vst", nfeatures = 2000)
+top10 <- head(VariableFeatures(MicrogliaMacrophages), 10)
+all.genes <- rownames(MicrogliaMacrophages)
+MicrogliaMacrophages <- ScaleData(MicrogliaMacrophages, features = all.genes)
+MicrogliaMacrophages <- RunPCA(MicrogliaMacrophages, features = VariableFeatures(object = brain_filtered_2))
+DimHeatmap(MicrogliaMacrophages, dims = 1:10, cells = 500, balanced = TRUE)
 
-microglia_2 <- FindNeighbors(microglia_2, dims = 1:4)
-microglia_2 <- FindClusters(microglia_2, resolution = 0.4) # finally this one!!!
+MicrogliaMacrophages <- FindNeighbors(MicrogliaMacrophages, dims = 1:4)
+MicrogliaMacrophages <- FindClusters(MicrogliaMacrophages, resolution = 0.4)
 
-microglia_2 <- RunUMAP(microglia_2, dims = 1:4)
+MicrogliaMacrophages <- RunUMAP(MicrogliaMacrophages, dims = 1:4)
 mycolors = c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="Set1", n = 8))
-DimPlot(microglia_2, reduction = "umap", label = FALSE, pt.size = 1, label.size = 10, cols = mycolors, split.by = "sample")
-DimPlot(microglia_2, reduction = "umap", split.by =  "group", group.by = "seurat_clusters",cols = mycolors)
-
-#all clusters markers
-Brainmarkers.microglia <- FindAllMarkers(object = microglia_2, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
-Brainmarkers.microglia %>% group_by(cluster) %>% top_n(n = 20, wt = avg_log2FC)
-write.table((Brainmarkers.microglia %>% group_by(cluster) %>% top_n(n = 200, wt = avg_log2FC)), 'markers_by_cluster_microglia.re0.4.tsv', sep='\t')
-
-# IDENTIFY EACH SUBCLUSTER OF MICROGLIA RECLUSTERED # res 0.4
-table(microglia_2$sample)
-table(microglia_2$group)
-FeaturePlot(microglia_2, features = c("P2RY12", "CX3CR1"))
-FeaturePlot(microglia_2, features = c("APOE", "SPP1", "TGFBR1", "C1QC", "C1QA", "IL1B"))
-DimPlot(microglia_2, reduction = "umap", split.by =  "group", group.by = "seurat_clusters",cols = mycolors)
-DimPlot(microglia_2, reduction = "umap", group.by = "group", cols = mycolors)
-DimPlot(microglia_2, reduction = "umap", group.by = "seurat_clusters", cols = mycolors)
-
-head(microglia_2)
-Idents(microglia_2) <- "RNA_snn_res.0.2" #resolution 0.2
-DimPlot(microglia_2, reduction = "umap", label = FALSE, pt.size = 1, label.size = 10, cols = mycolors, group.by = "RNA_snn_res.0.2")
-DimPlot(microglia_2, reduction = "umap", label = FALSE, pt.size = 1, label.size = 10, cols = mycolors, group.by = "RNA_snn_res.0.2", split.by = "group")
+DimPlot(MicrogliaMacrophages, reduction = "umap", label = FALSE, pt.size = 1, label.size = 10, cols = mycolors, split.by = "sample")
+DimPlot(MicrogliaMacrophages, reduction = "umap", split.by =  "group", group.by = "seurat_clusters",cols = mycolors)
 
 
-# Which mitocondrial genes? #microglia c2 from original, without reclustering
+
+# Which mitocondrial genes? # MicrogliaMacrophages cluster
 mito.genes <- grep(pattern = "^MT-", x = rownames(x =brain_filtered_2), value = TRUE)
 mito.genes
-VlnPlot(microglia_2, features = mito.genes)
-RidgePlot(microglia_2, features = mito.genes)
+VlnPlot(MicrogliaMacrophages, features = mito.genes)
+RidgePlot(MicrogliaMacrophages, features = mito.genes)
 
-EnhancedVolcano(microglia_2.markers.COV,
-                lab = rownames(microglia_2.markers.COV),
+EnhancedVolcano(MicrogliaMacrophages.markers.COV,
+                lab = rownames(MicrogliaMacrophages.markers.COV),
                 x = 'avg_log2FC',
                 y = 'p_val_adj',
                 xlab = bquote(~Log[2]~ 'fold change'),
@@ -264,7 +246,7 @@ EnhancedVolcano(microglia_2.markers.COV,
                 FCcutoff = 0.30,
                 pointSize = 3.0,
                 labSize = 6.0,
-                title = "microglia_2: COVID vs. CONTROL",
+                title = "MicrogliaMacrophages: COVID vs. CONTROL",
                 xlim = c(-2,2),
                 ylim = c(0, 30),
                 col=c('gray', 'gray', 'gray', 'red3'),
@@ -334,6 +316,70 @@ write.table(Tcells.markers.COV, 'markers_Tcells.tsv', sep='\t')
 
 # VSM NOT IN COVID
 # EpC NOT IN COVID
+
+
+# Heatmap MicrogliaMacrophages clusters
+
+genes = c ("DOCK4", "ITGAX",  "CX3CR1", "SALL1", "CD101","P2RY12", "P2RY13",  "LY86", 
+           "SORL1","GPR34", "CLEC7A","SELPLG", "CLEC12A","SRGAP2","TMEM119","SIGLEC1",
+            "TREM2","CSF1R","FAM13A", "GAS6", "CSF3R", "DISP1","SLC2A5","PTPRC","HEXB",
+            "SPP1","CD163", "MERTK", "APOE", "MS4A7","LYVE1",  "C1QC","MRC1", "CCR2" )
+
+avg <- AverageExpression(MicrogliaMacrophages, features = NULL, add.ident = NULL, return.seurat = TRUE, 
+                         verbose = TRUE, group.by = c("seurat_clusters", "group"))
+head(AverageExpression(object = avg)$RNA, 20)
+
+mapal <- colorRampPalette(RColorBrewer::brewer.pal(11,"RdBu"))(256)
+
+DoHeatmap(avg, features = genes, slot = "scale.data",
+          angle = 90, size = 3, draw.lines = FALSE) +
+  scale_fill_gradientn(colours = rev(mapal)) + RotatedAxis()
+
+
+
+# Expression of P2RY12 and CD163 in reactive MG
+MicrogliaMacrophages_c0 <- subset(x = MicrogliaMacrophages, idents = c("0"))
+DimPlot(object = MicrogliaMacrophages_c0, group.by = "group", cols= mycolors, pt.size = 2)
+head(MicrogliaMacrophages_c0)
+
+
+ExpressionP2RY12 <- GetAssayData(object = MicrogliaMacrophages_c0, assay = "RNA")["P2RY12",]
+head(ExpressionP2RY12)
+P2RY12_positive = names(which(ExpressionP2RY12>0))
+P2RY12_negative = names(which(ExpressionP2RY12<=0))
+
+ExpressionCD163 <- GetAssayData(object = MicrogliaMacrophages_c0, assay = "RNA")["CD163",]
+head(ExpressionCD163)
+CD163_positive = names(which(ExpressionCD163>0))
+CD163_negative = names(which(ExpressionCD163<=0))
+
+
+MicrogliaMacrophages_c0 <- AddModuleScore(object = MicrogliaMacrophages_c0, features = "P2RY12", name = "P2RY12exp")
+head(MicrogliaMacrophages_c0) 
+
+MicrogliaMacrophages_c0 <- AddModuleScore(object = MicrogliaMacrophages_c0, features = "CD163", name = "CD163exp")
+head(MicrogliaMacrophages_c0) 
+
+
+new.grouping <- c("ExpP2RY12")
+MicrogliaMacrophages_c0[[new.grouping]] <- new.grouping
+colnames(MicrogliaMacrophages_c0@meta.data)
+
+MicrogliaMacrophages_c0$ExpP2RY12[ExpressionP2RY12>0] <- "Positive"
+MicrogliaMacrophages_c0$ExpP2RY12[ExpressionP2RY12<=0] <- "Negative"
+head(MicrogliaMacrophages_c0)
+
+new.grouping <- c("ExpCD163")
+MicrogliaMacrophages_c0[[new.grouping]] <- new.grouping
+colnames(MicrogliaMacrophages_c0@meta.data)
+
+MicrogliaMacrophages_c0$ExpCD163[ExpressionCD163>0] <- "Positive"
+MicrogliaMacrophages_c0$ExpCD163[ExpressionCD163<=0] <- "Negative"
+head(MicrogliaMacrophages_c0)
+
+table(MicrogliaMacrophages_c0$ExpP2RY12, MicrogliaMacrophages_c0$group)
+table(MicrogliaMacrophages_c0$CD163exp, MicrogliaMacrophages_c0$group)
+
 
 
 
@@ -445,7 +491,7 @@ saveRDS(cellchat, file = "cellchat_ALL_reduced.rds")
 # load cellchat files
 cellchat.CONTROL_reduced <- readRDS("cellchat_CONTROL_reduced.rds")
 cellchat.ALL_reduced <- readRDS("cellchat_ALL_reduced.rds")
-cellchat.COVID <- readRDS("/.../cellchat_COVID.rds")
+cellchat.COVID <- readRDS("/Volumes/Alba Simats/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated/cellchat_COVID.rds")
 
 cellchat <- cellchat.CONTROL
 cellchat <- cellchat.ALL
@@ -575,7 +621,7 @@ saveRDS(cellchat, file = "cellchat_MERGED.noEpCVSM.rds")
 # load cellchat files
 cellchat.MERGED <- readRDS("cellchat_MERGED.rds")
 cellchat.MERGED.reduced <- readRDS("cellchat_MERGED.reduced.rds")
-cellchat.MERGED.reduced <- readRDS("/.../cellchat_MERGED.noEpCVSM.rds")
+cellchat.MERGED.reduced <- readRDS("/Volumes/AS/snRNAseq - HumanBrainCOVID/Ranalysis/HumanBrainCOVID/Analysis_4samplesAggregated/cellchat_MERGED.noEpCVSM.rds")
 
 
 
