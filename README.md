@@ -4,6 +4,7 @@
  **
  
 Rebeka Fekete1, Alba Simats2, Eduárd Bíró3, Balázs Pósfai1, Csaba Cserép1, Anett D Schwarcz1,4, Eszter Szabadits1, Zsuzsanna Környei1, Krisztina Tóth1, Erzsébet Fichó5, János Szalma5, Sára Vida1, Anna Kellermayer1,4, Csaba Dávid7, László Acsády8, Levente Kontra9, Carlos Silvestre-Roig10, Judit Moldvay11, János Fillinger12, Attila Csikász-Nagy6, Tibor Hortobágyi13,14,+, Arthur Liesz2, Szilvia Benkő3 and Ádám Dénes1, 15* 
+
 1 Momentum Laboratory of Neuroimmunology, HUN-REN Institute of Experimental Medicine, Budapest, H-1083 Hungary
 2 Institute for Stroke and Dementia Research, University Hospital, LMU Munich, Munich, Germany
 3 Laboratory of Inflammation-Physiology, Department of Physiology, Faculty of Medicine, University of Debrecen, Debrecen, Hungary
@@ -11,7 +12,6 @@ Rebeka Fekete1, Alba Simats2, Eduárd Bíró3, Balázs Pósfai1, Csaba Cserép1,
 5 Cytocast Hungary Kft. Budapest, Hungary
 6 Pázmány Péter Catholic University, Faculty of Information Technology and Bionics, Budapest, Hungary
 7 Department of Anatomy, Histology and Embryology, Semmelweis University; Budapest, Hungary
-
 8 Laboratory of Thalamus Research, HUN-REN Institute of Experimental Medicine, Budapest, Hungary
 9 Bioinformatics Unit, HUN-REN Institute of Experimental Medicine, Budapest, Hungary
 10 Institute for Experimental Pathology (ExPat), Center for Molecular Biology of Inflammation, WWU Muenster, Muenster, Germany
