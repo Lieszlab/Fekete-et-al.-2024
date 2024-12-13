@@ -320,18 +320,27 @@ write.table(Tcells.markers.COV, 'markers_Tcells.tsv', sep='\t')
 
 # Heatmap MicrogliaMacrophages clusters
 
+genes = c("TREM2","DOCK4", "ITGAX",  "CX3CR1", "SALL1", "CD101","P2RY12", "P2RY13",  "LY86", "CSF1R","SORL1","GLNY", "GPR34", "CLEC7A","SELPLG", "PLCL2" , "PLCL2", "GAS6","ITGAM",
+            "HS3ST2", "CSF3R", "DISP1", "PTPRE", "ERC2", "SLC2A5","PTPRC","SRGAP2", "SPP1","LYVE1", "CD163", "C1QC","MS4A7","MRC1", "CCR2","TMEM119", "HEXB", "CD44", "MERTK", "APOE", "ANKH", 
+            "TRIM2", "DSCAML1", "COL4A5", "FAM124A")
+
 genes = c ("DOCK4", "ITGAX",  "CX3CR1", "SALL1", "CD101","P2RY12", "P2RY13",  "LY86", 
            "SORL1","GPR34", "CLEC7A","SELPLG", "CLEC12A","SRGAP2","TMEM119","SIGLEC1",
             "TREM2","CSF1R","FAM13A", "GAS6", "CSF3R", "DISP1","SLC2A5","PTPRC","HEXB",
             "SPP1","CD163", "MERTK", "APOE", "MS4A7","LYVE1",  "C1QC","MRC1", "CCR2" )
 
+avgALLclusters <- AverageExpression(MicrogliaMacrophages, features = NULL, add.ident = NULL, return.seurat = TRUE, 
+                         verbose = TRUE, group.by = c("seurat_clusters"))
+
+mapal <- colorRampPalette(RColorBrewer::brewer.pal(11,"RdBu"))(256)
+DoHeatmap(avgALLclusters, features = genes, slot = "scale.data",
+          angle = 90, size = 3, draw.lines = FALSE) +
+  scale_fill_gradientn(colours = rev(mapal)) + RotatedAxis()
+
 avg <- AverageExpression(MicrogliaMacrophages, features = NULL, add.ident = NULL, return.seurat = TRUE, 
                          verbose = TRUE, group.by = c("seurat_clusters", "group"))
 head(AverageExpression(object = avg)$RNA, 20)
-
 subset_avg <- subset(avg, idents = c("0"))
-
-mapal <- colorRampPalette(RColorBrewer::brewer.pal(11,"RdBu"))(256)
 
 DoHeatmap(subset_avg, features = genes, slot = "scale.data",
           angle = 90, size = 3, draw.lines = FALSE) +
