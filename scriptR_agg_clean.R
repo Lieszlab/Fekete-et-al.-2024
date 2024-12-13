@@ -329,9 +329,11 @@ avg <- AverageExpression(MicrogliaMacrophages, features = NULL, add.ident = NULL
                          verbose = TRUE, group.by = c("seurat_clusters", "group"))
 head(AverageExpression(object = avg)$RNA, 20)
 
+subset_avg <- subset(avg, idents = c("0"))
+
 mapal <- colorRampPalette(RColorBrewer::brewer.pal(11,"RdBu"))(256)
 
-DoHeatmap(avg, features = genes, slot = "scale.data",
+DoHeatmap(subset_avg, features = genes, slot = "scale.data",
           angle = 90, size = 3, draw.lines = FALSE) +
   scale_fill_gradientn(colours = rev(mapal)) + RotatedAxis()
 
